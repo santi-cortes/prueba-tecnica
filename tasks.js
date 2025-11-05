@@ -1,70 +1,65 @@
-const fs = require("fs")
+const fs = require("fs");
 
-const dataBase = "tasks.json"
+const DB_PATH = "tasks.json";
 
-async function readJson() {
-    let jsonData = fs.readFileSync(dataBase, "utf-8")
-    let result = JSON.parse(jsonData)
-    return result
-}
-
-async function writeJson(obj) {
+const readJson = async () => {
   try {
-    const dataJson = await readJson();
-    const newId = dataJson.reduce((max, t) => Math.max(max, t.id), -1) + 1;
-    dataJson.push({ ...obj, id: newId, completada: false });
-    fs.writeFileSync(dataBase, JSON.stringify(dataJson));
-    return "Tarea guardada";
-  } catch (error) {
-    console.error("Hubo un error al registrar una tarea", error);
-    return "Error al registrar una tarea";
+    const data = fs.readFileSync(DB_PATH, "utf-8");
+    return JSON.parse(data || "[]");
+  } catch {
+    return [];
   }
-}
+};
 
+const saveJson = (data) => {
+  fs.writeFileSync(DB_PATH, JSON.stringify(data));
+};
 
-const getTasks = async () => {
-    const resultTasks = await readJson()
-    return resultTasks
-}
+const handleError = (msg, error) => {
+  console.error(`${msg}:`, error?.message || error);
+  return msg;
+};
 
-const addTasks = async (jsonTasks) => {
-    const resultWriteTasks = await writeJson(jsonTasks)
-    return resultWriteTasks
-}
+const getTasks = async () => readJson();
+
+const addTasks = async (task) => {
+  try {
+    const tasks = await readJson();
+    const newId = tasks.length ? Math.max(...tasks.map(t => t.id)) + 1 : 0;
+    const newTask = { ...task, id: newId, completada: false };
+    tasks.push(newTask);
+    saveJson(tasks);
+    return "Tarea guardada";
+  } catch (err) {
+    return handleError("Error al registrar una tarea", err);
+  }
+};
 
 const deleteTask = async (id) => {
   try {
     const tasks = await readJson();
-    const newTasks = tasks.filter((t) => t.id !== Number(id));
-    if (newTasks.length === tasks.length) {
+    const filtered = tasks.filter(t => t.id !== Number(id));
+    if (filtered.length === tasks.length)
       return `No se encontró tarea con id ${id}`;
-    }
-
-    fs.writeFileSync(dataBase, JSON.stringify(newTasks));
+    saveJson(filtered);
     return `Tarea con id ${id} eliminada correctamente`;
-  } catch (error) {
-    console.error("Error al eliminar tarea:", error);
-    return "Error al eliminar tarea";
+  } catch (err) {
+    return handleError("Error al eliminar tarea", err);
   }
 };
 
 const markTask = async (id) => {
   try {
     const tasks = await readJson();
-    const index = tasks.findIndex((t) => t.id === Number(id));
-
-    if (index === -1) {
+    const index = tasks.findIndex(t => t.id === Number(id));
+    if (index === -1)
       return `No se encontró tarea con id ${id}`;
-    }
-
-    tasks[index] = { ...tasks[index], completada: true };
-    fs.writeFileSync(dataBase, JSON.stringify(tasks));
-
+    tasks[index].completada = true;
+    saveJson(tasks);
     return `Tarea con id ${id} marcada como completada`;
-  } catch (error) {
-    console.error("Error al marcar tarea:", error);
-    return "Error al marcar tarea como completada";
+  } catch (err) {
+    return handleError("Error al marcar tarea como completada", err);
   }
 };
 
-module.exports = { getTasks, addTasks, deleteTask, markTask }
+module.exports = { getTasks, addTasks, deleteTask, markTask };
