@@ -1,5 +1,5 @@
 const express = require("express")
-const { getTasks, addTasks } = require("./tasks")
+const { getTasks, addTasks, deleteTask } = require("./tasks")
 const app = express()
 
 app.use(express.json())
@@ -22,13 +22,16 @@ app.post("/tareas", async (req, res) => {
     console.log(resultWrite)
     res.send({ message: resultWrite })
 })
-app.put("/tareas/:id", (req, res) => {
-    
+
+app.put("/tareas/:id", async (req, res) => {
+    const idTasks = req.params.id
+    const resultDelete = await deleteTask(idTasks)
+    res.send({ message: resultDelete })
 })
+
 app.delete("/tareas/:id", (req, res) => {
     
 })
-
 
 console.log("Servidor iniciado")
 app.listen(3000)

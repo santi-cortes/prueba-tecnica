@@ -9,17 +9,15 @@ async function readJson() {
 }
 
 async function writeJson(obj) {
-    let error = false
     try {
         const dataJson = await readJson()
         dataJson.push({...obj, id: dataJson.length, completada: false})
         fs.writeFileSync(dataBase, JSON.stringify(dataJson))
+        return "Tarea guardada"
     } catch (error) {
         console.error("Hubo un error al registrar una tarea")
-        error = true
+        return "Error al registrar una tarea"
     }
-    const typeMessage = error ? "Error al registrar una tarea" : "Tarea guardada"
-    return typeMessage
 }
 
 const getTasks = async () => {
@@ -32,4 +30,20 @@ const addTasks = async (jsonTasks) => {
     return resultWriteTasks
 }
 
-module.exports = { getTasks, addTasks }
+const deleteTask = async (id) => {
+  try {
+    const tasks = await readJson();
+    const newTasks = tasks.filter((t) => t.id !== Number(id));
+    if (newTasks.length === tasks.length) {
+      return `No se encontró tarea con id ${id}`;
+    }
+
+    fs.writeFileSync(dataBase, JSON.stringify(newTasks));
+    return `Tarea con id ${id} eliminada correctamente`;
+  } catch (error) {
+    console.error("Error al eliminar tarea:", error);
+    return "Error al eliminar tarea";
+  }
+};
+
+module.exports = { getTasks, addTasks, deleteTask }
