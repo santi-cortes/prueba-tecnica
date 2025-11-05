@@ -23,13 +23,13 @@ app.post("/tareas", async (req, res) => {
     res.send({ message: resultWrite })
 })
 
-app.put("/tareas/:id", async (req, res) => {
+app.delete("/tareas/:id", async (req, res) => {
     const idTasks = req.params.id
     const resultDelete = await deleteTask(idTasks)
     res.send({ message: resultDelete })
 })
 
-app.delete("/tareas/:id", (req, res) => {
+app.put("/tareas/:id", (req, res) => {
     
 })
 
