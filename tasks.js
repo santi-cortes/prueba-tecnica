@@ -1,4 +1,3 @@
-const { json } = require("body-parser")
 const fs = require("fs")
 
 const dataBase = "tasks.json"
@@ -13,15 +12,14 @@ async function writeJson(obj) {
     let error = false
     try {
         const dataJson = await readJson()
-        console.log(dataJson.lenght)
-        dataJson.push({...obj, id: dataJson.lenght, completada: false})
-        let document = fs.writeFileSync(dataBase, JSON.stringify(dataJson))
-        console.log(document)
+        dataJson.push({...obj, id: dataJson.length, completada: false})
+        fs.writeFileSync(dataBase, JSON.stringify(dataJson))
     } catch (error) {
         console.error("Hubo un error al registrar una tarea")
         error = true
     }
-    return error
+    const typeMessage = error ? "Error al registrar una tarea" : "Tarea guardada"
+    return typeMessage
 }
 
 const getTasks = async () => {

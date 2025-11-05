@@ -4,20 +4,23 @@ const app = express()
 
 app.use(express.json())
 
-app.get("/", (req, res) => {
+app.get("/", (_, res) => {
     res.send({ message: "API de tareas activa" })
 })
 
-app.get("/tareas", async (req, res) => {
+app.get("/tareas", async (_, res) => {
     let tasks = await getTasks()
     res.send(tasks)
 })
 
-app.post("/tareas", (req, res) => {
+app.post("/tareas", async (req, res) => {
     const paramsReq = req.body
-    console.log(paramsReq)
-    const errorWrite = addTasks(req.body)
-    errorWrite ? res.send({ message: "Error al guardar tarea" }) : res.send({ message: "Tarea guardada" })
+    if (paramsReq === null || typeof paramsReq !== 'object' || !Object.keys(paramsReq).includes("titulo")) {
+        res.send({ message: "Tu tarea no tiene la estructura requerida" })
+    }
+    const resultWrite = await addTasks(req.body)
+    console.log(resultWrite)
+    res.send({ message: resultWrite })
 })
 app.put("/tareas/:id", (req, res) => {
     
