@@ -35,5 +35,9 @@ app.put("/tareas/:id", async (req, res) => {
     res.send({ message: resultDelete })
 })
 
+app.use((req, res) => {
+  res.status(404).json({ error: "Ruta no encontrada" });
+});
+
 console.log("Servidor iniciado")
 app.listen(3000)
