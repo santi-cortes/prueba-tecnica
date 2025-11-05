@@ -9,16 +9,18 @@ async function readJson() {
 }
 
 async function writeJson(obj) {
-    try {
-        const dataJson = await readJson()
-        dataJson.push({...obj, id: dataJson.length, completada: false})
-        fs.writeFileSync(dataBase, JSON.stringify(dataJson))
-        return "Tarea guardada"
-    } catch (error) {
-        console.error("Hubo un error al registrar una tarea")
-        return "Error al registrar una tarea"
-    }
+  try {
+    const dataJson = await readJson();
+    const newId = dataJson.reduce((max, t) => Math.max(max, t.id), -1) + 1;
+    dataJson.push({ ...obj, id: newId, completada: false });
+    fs.writeFileSync(dataBase, JSON.stringify(dataJson));
+    return "Tarea guardada";
+  } catch (error) {
+    console.error("Hubo un error al registrar una tarea", error);
+    return "Error al registrar una tarea";
+  }
 }
+
 
 const getTasks = async () => {
     const resultTasks = await readJson()
