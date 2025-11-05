@@ -1,71 +1,67 @@
 const express = require("express");
 const { getTasks, addTasks, deleteTask, markTask } = require("./tasks");
 const app = express();
+const PORT = 3000;
 
 app.use(express.json());
 
-app.use((req, res, next) => {
-  res.setHeader("Content-Type", "application/json");
+const sendJSON = (res, status, data) => res.status(status).json(data);
+const validateId = (id) => !isNaN(Number(id)) && Number(id) >= 0;
+
+app.use((_, res, next) => {
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
   next();
 });
 
-app.get("/", (_, res) => {
-  res.status(200).json({ message: "API de tareas activa" });
-});
+app.get("/", (_, res) => sendJSON(res, 200, { message: "✅ API de tareas activa" }));
 
 app.get("/tareas", async (_, res) => {
   try {
     const tasks = await getTasks();
-    res.status(200).json({ data: tasks });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error al obtener las tareas" });
+    sendJSON(res, 200, { data: tasks });
+  } catch {
+    sendJSON(res, 500, { error: "Error al obtener las tareas" });
   }
 });
 
 app.post("/tareas", async (req, res) => {
-  const paramsReq = req.body;
-
-  if (!paramsReq || typeof paramsReq !== "object" || !("titulo" in paramsReq)) {
-    return res.status(400).json({ message: "Estructura inválida" });
+  const { titulo } = req.body;
+  if (!titulo || typeof titulo !== "string" || !titulo.trim()) {
+    return sendJSON(res, 400, { error: "Campo 'titulo' requerido y válido" });
   }
 
   try {
-    const resultWrite = await addTasks(paramsReq);
-    console.log(resultWrite);
-    res.status(201).json({ message: resultWrite });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error al registrar la tarea" });
+    const msg = await addTasks({ titulo: titulo.trim() });
+    sendJSON(res, 201, { message: msg });
+  } catch {
+    sendJSON(res, 500, { error: "Error al registrar la tarea" });
   }
 });
 
 app.delete("/tareas/:id", async (req, res) => {
   const id = req.params.id;
+  if (!validateId(id)) return sendJSON(res, 400, { error: "ID inválido" });
+
   try {
-    const resultDelete = await deleteTask(id);
-    res.status(200).json({ message: resultDelete });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error al eliminar la tarea" });
+    const msg = await deleteTask(Number(id));
+    sendJSON(res, 200, { message: msg });
+  } catch {
+    sendJSON(res, 500, { error: "Error al eliminar la tarea" });
   }
 });
 
 app.put("/tareas/:id", async (req, res) => {
   const id = req.params.id;
+  if (!validateId(id)) return sendJSON(res, 400, { error: "ID inválido" });
+
   try {
-    const resultMark = await markTask(id);
-    res.status(200).json({ message: resultMark });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error al actualizar la tarea" });
+    const msg = await markTask(Number(id));
+    sendJSON(res, 200, { message: msg });
+  } catch {
+    sendJSON(res, 500, { error: "Error al actualizar la tarea" });
   }
 });
 
-app.use((req, res) => {
-  res.status(404).json({ message: "Ruta no encontrada" });
-});
+app.use((_, res) => sendJSON(res, 404, { error: "Ruta no encontrada" }));
 
-app.listen(3000, () => {
-  console.log("Servidor iniciado en puerto 3000");
-});
+app.listen(PORT, () => console.log(`Servidor activo en puerto ${PORT}`));
