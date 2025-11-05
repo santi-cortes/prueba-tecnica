@@ -1,5 +1,5 @@
 const express = require("express")
-const { getTasks, addTasks, deleteTask } = require("./tasks")
+const { getTasks, addTasks, deleteTask, markTask } = require("./tasks")
 const app = express()
 
 app.use(express.json())
@@ -29,8 +29,10 @@ app.delete("/tareas/:id", async (req, res) => {
     res.send({ message: resultDelete })
 })
 
-app.put("/tareas/:id", (req, res) => {
-    
+app.put("/tareas/:id", async (req, res) => {
+    const idTasks = req.params.id
+    const resultDelete = await markTask(idTasks)
+    res.send({ message: resultDelete })
 })
 
 console.log("Servidor iniciado")

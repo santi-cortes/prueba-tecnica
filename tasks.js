@@ -46,4 +46,23 @@ const deleteTask = async (id) => {
   }
 };
 
-module.exports = { getTasks, addTasks, deleteTask }
+const markTask = async (id) => {
+  try {
+    const tasks = await readJson();
+    const index = tasks.findIndex((t) => t.id === Number(id));
+
+    if (index === -1) {
+      return `No se encontró tarea con id ${id}`;
+    }
+
+    tasks[index] = { ...tasks[index], completada: true };
+    fs.writeFileSync(dataBase, JSON.stringify(tasks));
+
+    return `Tarea con id ${id} marcada como completada`;
+  } catch (error) {
+    console.error("Error al marcar tarea:", error);
+    return "Error al marcar tarea como completada";
+  }
+};
+
+module.exports = { getTasks, addTasks, deleteTask, markTask }
